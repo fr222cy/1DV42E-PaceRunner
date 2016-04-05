@@ -7,6 +7,6 @@
                                                           
                                                           
 
-An exercise application for Android.
+An exercise application for Android smartphones.
 
 By Filip Rydberg
