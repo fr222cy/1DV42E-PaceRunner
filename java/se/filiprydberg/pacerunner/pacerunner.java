@@ -1,5 +1,6 @@
 package se.filiprydberg.pacerunner;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -21,7 +22,16 @@ public class pacerunner extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        proceedButton = (Button) findViewById(R.id.proceedButton);
 
+        proceedButton.setOnClickListener(new View.OnClickListener()
+        {
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(getApplicationContext(), setPaceActivity.class);
+                startActivity(intent);
+            }
+        });
 
     }
 
