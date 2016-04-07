@@ -7,3 +7,5 @@
     android:layout_height="match_parent"
     tools:context="se.filiprydberg.pacerunner.MapsActivity"
     tools:layout="@layout/activity_maps" />
+
+
