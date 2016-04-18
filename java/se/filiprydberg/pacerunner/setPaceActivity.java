@@ -22,6 +22,7 @@ public class setPaceActivity extends AppCompatActivity {
     private static final String TAG = "MyActivity";
     private Button startButton;
     private EditText averagePace;
+    private String submittedPace;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,26 +31,24 @@ public class setPaceActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
         averagePace = (EditText) findViewById(R.id.averagePace);
-
-        final String submittedPace = averagePace.getText().toString();
 
         startButton = (Button) findViewById(R.id.startButton);
 
-
-
             startButton.setOnClickListener(new View.OnClickListener() {
+
                 public void onClick(View v) {
+                    submittedPace = averagePace.getText().toString();
 
                     if(isValidPace(submittedPace)) {
-                        Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                        Intent intent = new Intent(getApplicationContext(), testNav.class);
+                        intent.putExtra("pace", submittedPace);
                         startActivity(intent);
                     }
                     else
                     {
                         startButton.setBackgroundColor(Color.RED);
-                        Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),"You Submitted: " + submittedPace, Snackbar.LENGTH_LONG );
+                        Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),"You need to enter a valid pace. eg: 5:00, 6:59, 14:23", Snackbar.LENGTH_LONG );
                         snackbar.show();
                     }
 
@@ -77,9 +76,6 @@ public class setPaceActivity extends AppCompatActivity {
         {
             return matcher.matches();
         }
-
-
-
     }
 
 }
