@@ -1,19 +1,21 @@
 package se.filiprydberg.pacerunner;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
+import android.graphics.Color;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
+
 import android.widget.Button;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -24,15 +26,16 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-
 public class pacerunner extends AppCompatActivity implements OnMapReadyCallback {
-    private Location _location;
-    private LocationManager locationManager;
-    private LocationListener locationListener;
     private Button proceedButton;
     private GoogleMap map;
     private MarkerOptions userPositionMarker;
+    private LocationService service;
     private Marker marker;
+    private ServiceReceiver serviceReceiver;
+    private boolean canProceed = false;
+    private LatLng coordinates;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +43,11 @@ public class pacerunner extends AppCompatActivity implements OnMapReadyCallback 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
+        startService(new Intent(getBaseContext(), LocationService.class));
+
+        service = new LocationService();
+        checkForPermission();
 
         userPositionMarker = new MarkerOptions()
                 .position(new LatLng(0, 0));
@@ -54,8 +62,13 @@ public class pacerunner extends AppCompatActivity implements OnMapReadyCallback 
 
         proceedButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), SetPace.class);
-                startActivity(intent);
+                if (canProceed) {
+                    Intent intent = new Intent(getApplicationContext(), SetPace.class);
+                    startActivity(intent);
+                } else {
+                    Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "You need to go outside for the GPS to work properly.", Snackbar.LENGTH_LONG);
+                    snackbar.show();
+                }
             }
         });
 
@@ -64,96 +77,78 @@ public class pacerunner extends AppCompatActivity implements OnMapReadyCallback 
     protected void onStart(){
         super.onStart();
 
+        serviceReceiver = new ServiceReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(LocationService.MY_ACTION);
+        registerReceiver(serviceReceiver, intentFilter);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_pacerunner, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
+    public void checkForPermission()
     {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+          /*
+        Check if it's API level 23 or higher,
+        due to the new permission rules.
+         */
+        if (Build.VERSION.SDK_INT >= 23) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION
+            }, 1);
         }
+        else {
+            LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+            service.startLocationListener(locationManager);
+        }
+    }
 
-        return super.onOptionsItemSelected(item);
+    public void disableButton(){
+        proceedButton.setText("TRYING TO LOCATE YOU...");
+        proceedButton.setBackgroundColor(Color.rgb(255, 165, 0));
+    }
+    public void enableButton(){
+        proceedButton.setText("SET PACE AND GO");
+        proceedButton.setBackgroundColor(Color.GREEN);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
-
         marker = map.addMarker(userPositionMarker);
-        RetrieveLocation();
     }
-
-    public void RetrieveLocation(){
-         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-         locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                    System.out.println("im inside:" + location);
-                    LatLng currentPos = new LatLng(location.getLatitude(), location.getLongitude());
-
-                    marker.setPosition(currentPos);
-                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentPos, 17));
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent);
-            }
-        };
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{
-                        Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION,
-                        Manifest.permission.INTERNET,Manifest.permission.ACCESS_NETWORK_STATE
-                }, 10);
-
-            }
-        } else {
-
-            locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 0, 0, locationListener);
-        }
-    }
-
+    
+    // Called from requestPermission()
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch(requestCode){
-            case 10:
-                if (grantResults.length>0 && grantResults[0]== PackageManager.PERMISSION_GRANTED)
-                    locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER, 0, 0, locationListener);
+            case 1:
+                if (grantResults.length>0 && grantResults[0]== PackageManager.PERMISSION_GRANTED) {
+                    LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+                    service.startLocationListener(locationManager);
+
+                }
         }
     }
 
-    public Location getPosition() {
-        if(_location != null){
-            return _location;
-        }
-        else{
-            return null;
+    private class ServiceReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context arg0, Intent arg1) {
+
+            double latitude = arg1.getDoubleExtra("LATITUDE",0);
+            double longitude = arg1.getDoubleExtra("LONGITUDE", 0);
+
+            if(longitude != 0 && latitude != 0){
+                coordinates = new LatLng(latitude,longitude);
+                marker.setPosition(coordinates);
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinates, 16));
+                enableButton();
+                canProceed = true;
+            }
+            else{
+                disableButton();
+                canProceed = false;
+            }
+
+
         }
 
     }

@@ -5,4 +5,5 @@
     <string name="Statistics">Statistics</string>
     <string name="title_activity_set_pace">Set Pace</string>
     <string name="title_activity_navigation">Navigation</string>
+    <string name="google_app_id">pacerunner</string>
 </resources>
