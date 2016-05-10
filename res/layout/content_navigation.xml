@@ -4,30 +4,113 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="0dp"
+    android:paddingLeft="0dp"
+    android:paddingRight="0dp"
+    android:paddingTop="0dp"
+    android:background="@color/standardBackground"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="se.filiprydberg.pacerunner.navigation"
+    tools:context=".Runner"
     tools:showIn="@layout/activity_navigation">
 
-    <TextView
+
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Coordinates"
-        android:id="@+id/result"
-        android:layout_marginTop="174dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_marginTop="0dp"
+        android:layout_height="300dp"
+        tools:context="se.filiprydberg.pacerunner.Runner"
+        tools:layout="@layout/activity_maps" />
 
     <Button
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="LOCATION"
-        android:id="@+id/locationButton"
-        android:layout_marginBottom="67dp"
-        android:layout_alignBottom="@+id/result"
+        android:text="PAUSE"
+        android:textColor="@color/standardBackground"
+        android:id="@+id/pausebutton"
+        android:background="@color/standardGreen"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="DISTANCE: "
+        android:id="@+id/textView5"
+        android:layout_marginBottom="193dp"
+        android:layout_marginStart="60dp"
+        android:textSize="24sp"
+        android:layout_above="@+id/pausebutton"
+        android:layout_below="@+id/map"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="AVERAGE PACE:"
+        android:id="@+id/textView6"
+        android:textSize="24sp"
+        android:layout_marginTop="41dp"
+        android:layout_alignTop="@+id/textView5"
+        android:layout_alignEnd="@+id/textView5" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TIME SPENT:"
+        android:id="@+id/textView7"
+        android:textSize="24sp"
+        android:layout_marginTop="23dp"
+        android:layout_below="@+id/textView6"
+        android:layout_alignEnd="@+id/textView6" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="GAP TO PACE:"
+        android:id="@+id/textView8"
+        android:textSize="24sp"
+        android:layout_marginTop="25dp"
+        android:layout_below="@+id/textView7"
+        android:layout_alignEnd="@+id/textView7" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0KM"
+        android:id="@+id/distance"
+        android:layout_alignTop="@+id/textView5"
+        android:layout_toEndOf="@+id/textView5"
+        android:layout_marginStart="26dp"
+        android:textSize="24sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0:00"
+        android:id="@+id/average_pace"
+        android:textSize="24sp"
+        android:layout_above="@+id/textView7"
+        android:layout_alignStart="@+id/distance" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+0:00"
+        android:id="@+id/gap_to_pace"
+        android:textSize="24sp"
+        android:layout_alignTop="@+id/textView8"
+        android:layout_alignStart="@+id/average_pace" />
+
+    <Chronometer
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/chronometer"
+        android:layout_alignTop="@+id/textView7"
+        android:layout_alignStart="@+id/average_pace"
+        android:textSize="25dp" />
+
+
 </RelativeLayout>
