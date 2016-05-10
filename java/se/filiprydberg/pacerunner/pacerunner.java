@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +19,8 @@ import android.view.View;
 
 import android.widget.Button;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -35,6 +38,7 @@ public class pacerunner extends AppCompatActivity implements OnMapReadyCallback 
     private ServiceReceiver serviceReceiver;
     private boolean canProceed = false;
     private LatLng coordinates;
+    private boolean hasAskedForPermission = false;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +51,7 @@ public class pacerunner extends AppCompatActivity implements OnMapReadyCallback 
         startService(new Intent(getBaseContext(), LocationService.class));
 
         service = new LocationService();
+        checkPlayServices();
         checkForPermission();
 
         userPositionMarker = new MarkerOptions()
@@ -64,6 +69,12 @@ public class pacerunner extends AppCompatActivity implements OnMapReadyCallback 
             public void onClick(View v) {
                 if (canProceed) {
                     Intent intent = new Intent(getApplicationContext(), SetPace.class);
+
+
+                    intent.putExtra("LATITUDE", coordinates.latitude);
+                    intent.putExtra("LONGITUDE", coordinates.longitude);
+
+
                     startActivity(intent);
                 } else {
                     Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "You need to go outside for the GPS to work properly.", Snackbar.LENGTH_LONG);
@@ -81,6 +92,20 @@ public class pacerunner extends AppCompatActivity implements OnMapReadyCallback 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(LocationService.MY_ACTION);
         registerReceiver(serviceReceiver, intentFilter);
+    }
+
+    private boolean checkPlayServices() {
+        GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
+        int result = googleAPI.isGooglePlayServicesAvailable(this);
+        if(result != ConnectionResult.SUCCESS) {
+            if(googleAPI.isUserResolvableError(result)) {
+                googleAPI.getErrorDialog(this, result, 1000).show();
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     public void checkForPermission()
@@ -123,7 +148,6 @@ public class pacerunner extends AppCompatActivity implements OnMapReadyCallback 
                 if (grantResults.length>0 && grantResults[0]== PackageManager.PERMISSION_GRANTED) {
                     LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
                     service.startLocationListener(locationManager);
-
                 }
         }
     }
@@ -135,11 +159,17 @@ public class pacerunner extends AppCompatActivity implements OnMapReadyCallback 
 
             double latitude = arg1.getDoubleExtra("LATITUDE",0);
             double longitude = arg1.getDoubleExtra("LONGITUDE", 0);
+            boolean providerEnabled = arg1.getBooleanExtra("PROVIDER_ENABLED", true);
+
+            if(!providerEnabled && !hasAskedForPermission){
+                startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                hasAskedForPermission = true;
+            }
 
             if(longitude != 0 && latitude != 0){
                 coordinates = new LatLng(latitude,longitude);
                 marker.setPosition(coordinates);
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinates, 16));
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinates, 17));
                 enableButton();
                 canProceed = true;
             }
