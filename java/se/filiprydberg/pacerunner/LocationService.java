@@ -17,9 +17,10 @@ public class LocationService extends Service {
     final static String MY_ACTION = "MY_ACTION";
 
 
-    public static double latidude;
-    public static double longitude;
-
+    private static double latidude;
+    private static double longitude;
+    private static double accuracy;
+    private static boolean providerEnabled = true;
     public LocationService() {
 
     }
@@ -52,24 +53,22 @@ public class LocationService extends Service {
             public void onLocationChanged(Location location) {
                 latidude = location.getLatitude();
                 longitude = location.getLongitude();
+                accuracy = location.getAccuracy();
             }
 
             @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
-                Toast toast = Toast.makeText(getApplicationContext(), "Your GPS provider has been modified.", Toast.LENGTH_SHORT);
-                toast.show();
+
             }
 
             @Override
             public void onProviderEnabled(String provider) {
-                Toast toast = Toast.makeText(getApplicationContext(), "Your GPS provider has been enabled.", Toast.LENGTH_SHORT);
-                toast.show();
+                providerEnabled = true;
             }
 
             @Override
             public void onProviderDisabled(String provider) {
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent);
+                providerEnabled = false;
             }
         };
         //noinspection ResourceType
@@ -82,6 +81,7 @@ public class LocationService extends Service {
         @Override
         public void run() {
 
+
             while(true){
                 try {
                     Thread.sleep(1000);
@@ -89,10 +89,16 @@ public class LocationService extends Service {
                     intent.setAction(MY_ACTION);
                     intent.putExtra("LATITUDE", LocationService.latidude);
                     intent.putExtra("LONGITUDE", LocationService.longitude);
-                    //TODO: PASS ACCURACY TO MAIN ACTIVITY
+                    intent.putExtra("GPS_ACCURACY", LocationService.accuracy);
+
+                    if(!providerEnabled){
+                        intent.putExtra("PROVIDER_ENABLED", LocationService.providerEnabled);
+                    }
+
+
                     sendBroadcast(intent);
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
+
                     e.printStackTrace();
                     break;
                 }
