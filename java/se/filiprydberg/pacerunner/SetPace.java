@@ -2,27 +2,29 @@ package se.filiprydberg.pacerunner;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.graphics.Color;
-import android.widget.RelativeLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.NumberPicker;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-
-public class SetPace extends AppCompatActivity {
+public class SetPace extends AppCompatActivity  {
     private static final String TAG = "MyActivity";
     private Button startButton;
     private EditText averagePace;
-    private String submittedPace;
+    private int submittedMinute;
+    private int submittedSecond;
+    private NumberPicker minutePicker;
+    private NumberPicker secondPicker;
+    private ListView notificationList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,48 +32,90 @@ public class SetPace extends AppCompatActivity {
         setContentView(R.layout.activity_set_pace);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        NotificationSounds notificationSounds = new NotificationSounds();
 
-        averagePace = (EditText) findViewById(R.id.averagePace);
+        String[] notifications = notificationSounds.getNotificationArray();
+
+        notificationList = getListView(notifications);
+
+        choiceCallback();
+        setTimePickers();
 
         startButton = (Button) findViewById(R.id.startButton);
+
+
 
             startButton.setOnClickListener(new View.OnClickListener() {
 
                 public void onClick(View v) {
-                    submittedPace = averagePace.getText().toString();
+                    submittedMinute = minutePicker.getValue();
+                    submittedSecond = secondPicker.getValue();
 
-                    if(isValidPace(submittedPace)) {
-                        Intent intent = new Intent(getApplicationContext(), navigation.class);
-                        intent.putExtra("pace", submittedPace);
+
+                    if (isValidTime(submittedMinute, submittedSecond)) {
+                        Intent intent = new Intent(getApplicationContext(), Runner.class);
+                        intent.putExtra("MINUTE", submittedMinute);
+                        intent.putExtra("SECOND", submittedSecond);
+
+                        Intent previousIntent= getIntent();
+
+                        //Pass the latest known LATLNG to the Runner class.
+                        intent.putExtra("LATITUDE", previousIntent.getDoubleExtra("LATITUDE", 0));
+                        intent.putExtra("LONGITUDE", previousIntent.getDoubleExtra("LONGITUDE", 0));
+
                         startActivity(intent);
-                    }
-                    else {
+                    } else {
                         startButton.setBackgroundColor(Color.RED);
-                        Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),"You need to enter a valid pace. eg: 5:00, 6:59, 14:23", Snackbar.LENGTH_LONG );
+                        Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "You need to enter a valid pace, try again.", Snackbar.LENGTH_LONG);
                         snackbar.show();
                     }
-
                 }
             });
-
-
     }
 
-    /* Valdidating the pace that has been set.
-    * Valid Ones: 3:25, 09:55 14:33
-    * Not Valid Ones: 001:43, 40:40, 9:61.*/
-    private boolean isValidPace(String submittedPace) {
-        Matcher matcher;
-        Pattern pattern;
+    public void setTimePickers() {
+        minutePicker = (NumberPicker) findViewById(R.id.minutePicker);
+        minutePicker.setMinValue(1);
+        minutePicker.setMaxValue(20);
 
-        pattern = Pattern.compile("([01]?[0-9]):[0-5][0-9]");
-        matcher = pattern.matcher(submittedPace);
-        if(submittedPace == null) {
-            return true;
-        }
-        else {
-            return matcher.matches();
-        }
+        secondPicker = (NumberPicker) findViewById(R.id.secondPicker);
+        secondPicker.setMinValue(0);
+        secondPicker.setMaxValue(59);
+        secondPicker.setFormatter(new NumberPicker.Formatter() {
+            @Override
+            public String format(int i) {
+                return String.format("%02d", i);
+            }
+        });
     }
+
+    /* Validating the pace that has been set.
+    * Valid minute 1-20
+    * Valid second 0-59.*/
+    private boolean isValidTime(int minute, int second) {
+        return minute > 0 && minute <=20 && second >= 0 && second < 60;
+    }
+
+    private ListView getListView(String[] notifications){
+        ListAdapter la = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, notifications);
+
+        notificationList = (ListView) findViewById(R.id.notificationList);
+        notificationList.setAdapter(la);
+        return notificationList;
+    }
+
+    private void choiceCallback(){
+
+        notificationList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                String notificationChoice = String.valueOf(parent.getItemAtPosition(position));
+            }
+        });
+    }
+
+
 
 }
