@@ -10,7 +10,7 @@
     android:paddingTop="0dp"
     android:background="@color/standardBackground"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".Runner"
+    tools:context=".Activities.SessionActivity"
     tools:showIn="@layout/activity_navigation">
 
 
@@ -21,8 +21,8 @@
         android:layout_width="wrap_content"
         android:layout_marginTop="0dp"
         android:layout_height="300dp"
-        tools:context="se.filiprydberg.pacerunner.Runner"
-        tools:layout="@layout/activity_maps" />
+        tools:context=".Activities.SessionActivity"
+         />
 
     <Button
         android:layout_width="fill_parent"
