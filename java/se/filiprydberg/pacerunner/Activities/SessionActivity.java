@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.location.Location;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
@@ -24,6 +25,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import se.filiprydberg.pacerunner.NotificationSounds;
 import se.filiprydberg.pacerunner.Services.LocationService;
 import se.filiprydberg.pacerunner.R;
 
@@ -41,9 +43,12 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
     private TextView totalDistanceView;
     private TextView averagePaceView;
     private TextView gapToPaceView;
+    private NotificationSounds sounds = new NotificationSounds();
 
     private static int[] userSubmittedAveragePace;
     private static int REQUIRED_METERS_BEFORE_SHOWING_AVGPACE = 50;
+    private static int AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION = -30;
+    private static String NOTIFICATION_SOUND;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,23 +57,31 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        //Setting Views
         totalDistanceView = (TextView) findViewById(R.id.distance);
         averagePaceView = (TextView) findViewById(R.id.average_pace);
         gapToPaceView = (TextView) findViewById(R.id.gap_to_pace);
 
+        //Start the Chronometer
         startTimer();
+
+        //Retrieve the data from the previous activity.
+        Intent previousIntent = getIntent();
+        startPosition = new LatLng(previousIntent.getDoubleExtra("LATITUDE",0),
+                previousIntent.getDoubleExtra("LONGITUDE",0));
+        NOTIFICATION_SOUND = previousIntent.getStringExtra("NOTIFICATION_SOUND");
+        userSubmittedAveragePace = new int[] {previousIntent.getIntExtra("MINUTE", 0), previousIntent.getIntExtra("SECOND", 0)};
+
+        sounds.setMediaPlayerSounds(NOTIFICATION_SOUND, getApplicationContext());
+
+        //Inititalize the serviceReceiver.
         serviceReceiver = new ServiceReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(LocationService.MY_ACTION);
         registerReceiver(serviceReceiver, intentFilter);
 
-        Intent previousIntent = getIntent();
-
-        startPosition = new LatLng(previousIntent.getDoubleExtra("LATITUDE",0),
-                                   previousIntent.getDoubleExtra("LONGITUDE",0));
-
-        userSubmittedAveragePace = new int[] {previousIntent.getIntExtra("MINUTE", 0), previousIntent.getIntExtra("SECOND", 0)};
-
+        //Place a marker on the users startposition.
         positionMarker = new MarkerOptions()
                 .position(startPosition);
     }
@@ -89,12 +102,13 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
     private class ServiceReceiver extends BroadcastReceiver {
         private float totalDistanceMeters;
 
+
         @Override
         public void onReceive(Context arg0, Intent arg1) {
 
             double latitude = arg1.getDoubleExtra("LATITUDE",0);
             double longitude = arg1.getDoubleExtra("LONGITUDE", 0);
-
+            System.out.println("Sound:" + NOTIFICATION_SOUND);
             if(longitude != 0 && latitude != 0){
                 currentCoordinates = new LatLng(latitude,longitude);
                 marker.setPosition(currentCoordinates);
@@ -106,11 +120,12 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
                 setTotalDistance(previousCoorinates, currentCoordinates);
                 int[] averagePace = getAveragePace();
                 int[] gap = getGapToAveragePace(averagePace);
+                int soundType = getWhatShoundThatShouldBePlayed(gap[2]);
+                sounds.playSoundByType(soundType);
                 updateViewStatistics(averagePace, gap);
                 previousCoorinates = new LatLng(currentCoordinates.latitude,currentCoordinates.longitude);
             }
-            else
-            {
+            else{
                 previousCoorinates = currentCoordinates;
             }
         }
@@ -152,7 +167,9 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
                 int minDiff = (int)diff / (60 * 1000) % 60;
                 int secDiff = (int)diff / 1000 % 60;
 
-                return new int[] {minDiff, secDiff};
+                //Using secDiffNoFormat to make it easier to calculate for the notification.
+                int secDiffNoFormat = (int)diff / 1000;
+                return new int[] {minDiff, secDiff, secDiffNoFormat};
             }
             catch(Exception e){
                 e.printStackTrace();
@@ -205,6 +222,23 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
                 averagePaceView.setText("Calculating...");
                 gapToPaceView.setText("Calculating...");
             }
+        }
+        /*
+        Returns 0-2,
+        0 indicates that no sound should be played.
+        1 indicates that the first and less annoying sound should be played.
+        2 indicates that the second and more annoying sound should be played.
+        */
+        private int getWhatShoundThatShouldBePlayed(int gapAmountOfSeconds){
+            if (gapAmountOfSeconds >= AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION &&
+                    gapAmountOfSeconds <= 0)
+                return 1;
+
+            if (gapAmountOfSeconds >= AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION/2 &&
+                    gapAmountOfSeconds <= 0)
+                return 2;
+
+            return 0;
         }
     }
 }
