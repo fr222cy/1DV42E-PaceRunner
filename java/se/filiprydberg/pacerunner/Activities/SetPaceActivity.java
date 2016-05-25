@@ -2,6 +2,7 @@ package se.filiprydberg.pacerunner.Activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -32,25 +33,24 @@ public class SetPaceActivity extends AppCompatActivity  {
     private NumberPicker secondPicker;
     private ListView notificationList;
     private MediaPlayer soundPreview;
-
+    private String SUBMITTED_NOTIFICATION_SOUND;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_set_pace);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        NotificationSounds notificationSounds = new NotificationSounds();
+        final NotificationSounds notificationSounds = new NotificationSounds();
 
         String[] notifications = notificationSounds.getNotificationArray();
 
         notificationList = getListView(notifications);
 
         choiceCallback();
+
         setTimePickers();
 
         startButton = (Button) findViewById(R.id.startButton);
-
-
 
             startButton.setOnClickListener(new View.OnClickListener() {
 
@@ -58,19 +58,29 @@ public class SetPaceActivity extends AppCompatActivity  {
                     submittedMinute = minutePicker.getValue();
                     submittedSecond = secondPicker.getValue();
 
-
                     if (isValidTime(submittedMinute, submittedSecond)) {
-                        Intent intent = new Intent(getApplicationContext(), SessionActivity.class);
-                        intent.putExtra("MINUTE", submittedMinute);
-                        intent.putExtra("SECOND", submittedSecond);
 
-                        Intent previousIntent= getIntent();
+                        if(SUBMITTED_NOTIFICATION_SOUND != null){
+                            Intent intent = new Intent(getApplicationContext(), SessionActivity.class);
+                            intent.putExtra("MINUTE", submittedMinute);
+                            intent.putExtra("SECOND", submittedSecond);
 
-                        //Pass the latest known LATLNG to the Runner class.
-                        intent.putExtra("LATITUDE", previousIntent.getDoubleExtra("LATITUDE", 0));
-                        intent.putExtra("LONGITUDE", previousIntent.getDoubleExtra("LONGITUDE", 0));
+                            Intent previousIntent= getIntent();
 
-                        startActivity(intent);
+                            //Pass the latest known LATLNG to the Runner class.
+                            intent.putExtra("LATITUDE", previousIntent.getDoubleExtra("LATITUDE", 0));
+                            intent.putExtra("LONGITUDE", previousIntent.getDoubleExtra("LONGITUDE", 0));
+                            //Pass the choice of notification as a string
+                            intent.putExtra("NOTIFICATION_SOUND", SUBMITTED_NOTIFICATION_SOUND);
+
+                            startActivity(intent);
+                        }
+                        else {
+                            startButton.setBackgroundColor(Color.RED);
+                            Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Select a notification, try again.", Snackbar.LENGTH_LONG);
+                            snackbar.show();
+                        }
+
                     } else {
                         startButton.setBackgroundColor(Color.RED);
                         Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "You need to enter a valid pace, try again.", Snackbar.LENGTH_LONG);
@@ -117,10 +127,11 @@ public class SetPaceActivity extends AppCompatActivity  {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String notificationChoice = String.valueOf(parent.getItemAtPosition(position));
-                previewChoice(notificationChoice);
+                SUBMITTED_NOTIFICATION_SOUND = String.valueOf(parent.getItemAtPosition(position));
+                previewChoice(SUBMITTED_NOTIFICATION_SOUND);
             }
         });
+
     }
 
     private void previewChoice(String notificationChoice){
@@ -132,8 +143,10 @@ public class SetPaceActivity extends AppCompatActivity  {
                 soundPreview = MediaPlayer.create(this, R.raw.jaws2);
                 soundPreview.start();
             }
-            default: {
 
+            default: {
+                Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Not yet available", Snackbar.LENGTH_SHORT);
+                snackbar.show();
                 break;
             }
         }
