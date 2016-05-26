@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean canProceed = false;
     private LatLng coordinates;
     private boolean hasAskedForPermission = false;
+    private boolean paused = false;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         map = googleMap;
         marker = map.addMarker(userPositionMarker);
     }
-    
+
     // Called from requestPermission()
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -178,10 +179,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 disableButton();
                 canProceed = false;
             }
-
-
         }
-
     }
 }
 
