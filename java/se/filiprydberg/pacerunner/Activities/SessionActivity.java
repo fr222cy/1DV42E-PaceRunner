@@ -9,7 +9,10 @@ import android.location.Location;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.TextView;
 
@@ -43,12 +46,14 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
     private TextView totalDistanceView;
     private TextView averagePaceView;
     private TextView gapToPaceView;
+    private Button pauseButton;
     private NotificationSounds sounds = new NotificationSounds();
 
-    private static int[] userSubmittedAveragePace;
-    private static int REQUIRED_METERS_BEFORE_SHOWING_AVGPACE = 50;
-    private static int AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION = -30;
-    private static String NOTIFICATION_SOUND;
+    private int[] userSubmittedAveragePace;
+    private final int REQUIRED_METERS_BEFORE_SHOWING_AVGPACE = 50;
+    private final int AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION = -30;
+    private String NOTIFICATION_SOUND;
+    private boolean isPaused = false;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +68,7 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
         averagePaceView = (TextView) findViewById(R.id.average_pace);
         gapToPaceView = (TextView) findViewById(R.id.gap_to_pace);
 
+
         //Start the Chronometer
         startTimer();
 
@@ -73,17 +79,36 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
         NOTIFICATION_SOUND = previousIntent.getStringExtra("NOTIFICATION_SOUND");
         userSubmittedAveragePace = new int[] {previousIntent.getIntExtra("MINUTE", 0), previousIntent.getIntExtra("SECOND", 0)};
 
+        //Initialize the sounds chosen.
         sounds.setMediaPlayerSounds(NOTIFICATION_SOUND, getApplicationContext());
 
-        //Inititalize the serviceReceiver.
+        //Initialize the ServiceReceiver.
         serviceReceiver = new ServiceReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(LocationService.MY_ACTION);
         registerReceiver(serviceReceiver, intentFilter);
 
-        //Place a marker on the users startposition.
+        //Pause and Finish button functionality
+        onClicks();
+        //Place a marker on the users startPosition.
         positionMarker = new MarkerOptions()
                 .position(startPosition);
+    }
+
+    public void onClicks(){
+        pauseButton = (Button) findViewById(R.id.pausebutton);
+
+        pauseButton.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View v) {
+                if(isPaused){
+                    //TODO: GET THE SERVICE AND PAUSE IT
+                }
+                else{
+                    //TODO: GET THE SERVICE AND RESUME IT
+                }
+            }
+        });
     }
 
     public void onMapReady(GoogleMap googleMap){
@@ -95,13 +120,11 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
 
     private void startTimer(){
         timer = (Chronometer) findViewById(R.id.chronometer);
-
         timer.start();
     }
 
     private class ServiceReceiver extends BroadcastReceiver {
         private float totalDistanceMeters;
-
 
         @Override
         public void onReceive(Context arg0, Intent arg1) {
@@ -120,7 +143,7 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
                 setTotalDistance(previousCoorinates, currentCoordinates);
                 int[] averagePace = getAveragePace();
                 int[] gap = getGapToAveragePace(averagePace);
-                int soundType = getWhatShoundThatShouldBePlayed(gap[2]);
+                int soundType = getWhatSoundThatShouldBePlayed(gap[2]);
                 sounds.playSoundByType(soundType);
                 updateViewStatistics(averagePace, gap);
                 previousCoorinates = new LatLng(currentCoordinates.latitude,currentCoordinates.longitude);
@@ -229,15 +252,13 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
         1 indicates that the first and less annoying sound should be played.
         2 indicates that the second and more annoying sound should be played.
         */
-        private int getWhatShoundThatShouldBePlayed(int gapAmountOfSeconds){
-            if (gapAmountOfSeconds >= AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION &&
-                    gapAmountOfSeconds <= 0)
+        private int getWhatSoundThatShouldBePlayed(int gapAmountOfSeconds){
+            if (gapAmountOfSeconds >= AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION && gapAmountOfSeconds <= 0){
+                if (gapAmountOfSeconds >= AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION/2 && gapAmountOfSeconds <= 0){
+                    return 2;
+                }
                 return 1;
-
-            if (gapAmountOfSeconds >= AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION/2 &&
-                    gapAmountOfSeconds <= 0)
-                return 2;
-
+            }
             return 0;
         }
     }
