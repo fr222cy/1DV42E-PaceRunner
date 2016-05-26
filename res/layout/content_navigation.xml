@@ -24,15 +24,28 @@
         tools:context=".Activities.SessionActivity"
          />
 
+
     <Button
-        android:layout_width="fill_parent"
+        android:layout_width="160dp"
         android:layout_height="wrap_content"
         android:text="PAUSE"
         android:textColor="@color/standardBackground"
         android:id="@+id/pausebutton"
+        android:background="@color/standardOrange"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+         />
+
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="FINISH"
+        android:textColor="@color/standardBackground"
+        android:id="@+id/finishButton"
         android:background="@color/standardGreen"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentStart="true"
+        android:layout_toRightOf="@+id/pausebutton" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -111,6 +124,5 @@
         android:layout_alignTop="@+id/textView7"
         android:layout_alignStart="@+id/average_pace"
         android:textSize="25dp" />
-
 
 </RelativeLayout>

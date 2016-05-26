@@ -19,7 +19,7 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="wrap_content"
         android:layout_marginTop="0dp"
-        android:layout_height="300dp"
+        android:layout_height="wrap_content"
         tools:context="se.filiprydberg.pacerunner.Activities.MainActivity"
          />
 
@@ -31,16 +31,5 @@
         android:id="@+id/proceedButton"
         android:layout_alignParentBottom="true"
         android:background="@color/standardGreen" />
-
-    <Button
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:text="@string/Statistics"
-        android:id="@+id/button3"
-        android:layout_below="@+id/map"/>
-
-
-
-
 
 </RelativeLayout>
