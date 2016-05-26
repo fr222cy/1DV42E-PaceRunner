@@ -17,6 +17,7 @@ public class LocationService extends Service {
     private static double accuracy;
     private static boolean providerEnabled = true;
     private static int MILLISECONDS_UPDATE_LOCATION = 3000;
+    private boolean isServiceEnabled = true;
     public LocationService() {
 
     }
@@ -71,14 +72,20 @@ public class LocationService extends Service {
         locationManager.requestLocationUpdates("gps", MILLISECONDS_UPDATE_LOCATION, 0, locationListener);
     }
 
+    public void pauseService(){
+        isServiceEnabled = false;
+    }
+    public void resumeService(){
+        isServiceEnabled = true;
+    }
+
 
     public class DataPassingThread extends Thread{
 
         @Override
         public void run() {
 
-
-            while(true){
+            while(isServiceEnabled){
                 try {
                     Thread.sleep(1000);
                     Intent intent = new Intent();
@@ -90,10 +97,8 @@ public class LocationService extends Service {
                     if(!providerEnabled){
                         intent.putExtra("PROVIDER_ENABLED", LocationService.providerEnabled);
                     }
-
-
                     sendBroadcast(intent);
-                } catch (InterruptedException e) {
+                }catch (InterruptedException e) {
 
                     e.printStackTrace();
                     break;
