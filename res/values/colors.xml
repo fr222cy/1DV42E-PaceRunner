@@ -6,4 +6,5 @@
     <color name="standardGreen">#76EE00</color>
     <color name="standardOrange">#FFA500</color>
     <color name="standardBackground">#616161</color>
+    <color name="standardWhite">#ffffff</color>
 </resources>

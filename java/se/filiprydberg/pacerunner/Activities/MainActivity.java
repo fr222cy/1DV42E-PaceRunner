@@ -15,6 +15,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
 import android.widget.Button;
@@ -51,32 +53,24 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
         startService(new Intent(getBaseContext(), LocationService.class));
-
         service = new LocationService();
         checkPlayServices();
         checkForPermission();
-
         userPositionMarker = new MarkerOptions()
                 .position(new LatLng(0, 0));
 
-
-            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.map);
-            mapFragment.getMapAsync(this);
-
-
         proceedButton = (Button) findViewById(R.id.proceedButton);
-
         proceedButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (canProceed) {
                     Intent intent = new Intent(getApplicationContext(), SetPaceActivity.class);
-
                     intent.putExtra("LATITUDE", coordinates.latitude);
                     intent.putExtra("LONGITUDE", coordinates.longitude);
-
                     startActivity(intent);
                 } else {
                     Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "You need to go outside for the GPS to work properly.", Snackbar.LENGTH_LONG);
@@ -87,6 +81,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
     @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.menu_pacerunner, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        switch(item.getItemId()){
+            case R.id.action_statistics : {
+                return true;
+            }
+            case R.id.action_help : {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     protected void onStart(){
         super.onStart();
 
@@ -95,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         intentFilter.addAction(LocationService.MY_ACTION);
         registerReceiver(serviceReceiver, intentFilter);
     }
-
+    //Check if the user has the latest play services.
     private boolean checkPlayServices() {
         GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
         int result = googleAPI.isGooglePlayServicesAvailable(this);
@@ -109,13 +122,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         return true;
     }
-
+    //Check if it's API level 23 or higher,due to the new permission rules.
     public void checkForPermission()
     {
-          /*
-        Check if it's API level 23 or higher,
-        due to the new permission rules.
-         */
         if (Build.VERSION.SDK_INT >= 23) {
             ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION

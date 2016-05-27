@@ -6,4 +6,9 @@
     <string name="title_activity_set_pace">Set Pace</string>
     <string name="title_activity_navigation">Navigation</string>
     <string name="google_app_id">pacerunner</string>
+
+
+    <!-- Action bar Strings-->
+    <string name="action_statistics">Statistics</string>
+    <string name="action_help">Help</string>
 </resources>
