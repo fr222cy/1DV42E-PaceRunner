@@ -1,7 +1,9 @@
 package se.filiprydberg.pacerunner.Activities;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
@@ -47,6 +49,7 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
     private TextView averagePaceView;
     private TextView gapToPaceView;
     private Button pauseButton;
+    private Button finishButton;
     private NotificationSounds sounds = new NotificationSounds();
 
     private int[] userSubmittedAveragePace;
@@ -54,6 +57,7 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
     private final int AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION = -30;
     private String NOTIFICATION_SOUND;
     private boolean isPaused = false;
+    private long timeElapsed;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,8 +71,8 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
         totalDistanceView = (TextView) findViewById(R.id.distance);
         averagePaceView = (TextView) findViewById(R.id.average_pace);
         gapToPaceView = (TextView) findViewById(R.id.gap_to_pace);
-
-
+        pauseButton = (Button) findViewById(R.id.pausebutton);
+        finishButton = (Button) findViewById(R.id.finishButton);
         //Start the Chronometer
         startTimer();
 
@@ -89,26 +93,84 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
         registerReceiver(serviceReceiver, intentFilter);
 
         //Pause and Finish button functionality
-        onClicks();
+        onClicks(this);
         //Place a marker on the users startPosition.
         positionMarker = new MarkerOptions()
                 .position(startPosition);
     }
+    /*
+    Gets a dialog based on the type.
+    0 - Finished Dialog
+    1 - Back Dialog
+     */
+    private AlertDialog getDialog(int type) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        if(type == 0){
+            builder.setMessage("Press proceed to see your session summary.")
+                    .setTitle("Are you done?");
+            // Add the buttons
+            builder.setPositiveButton("Proceed", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // User clicked OK button
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    return;
+                }
+            });
+        }
+        else if(type == 1){
+            builder.setMessage("You are about to exit and end this session, no data will be saved.")
+                    .setTitle("Exit?");
+            // Add the buttons
+            builder.setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    finish();
+                }
+            });
+            builder.setNegativeButton("Continue Running", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    return;
+                }
+            });
+        }
 
-    public void onClicks(){
-        pauseButton = (Button) findViewById(R.id.pausebutton);
 
+        return builder.create();
+    }
+
+    public void onClicks(SessionActivity currentActivity){
+        final SessionActivity activity = currentActivity;
         pauseButton.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View v) {
-                if(isPaused){
-                    //TODO: GET THE SERVICE AND PAUSE IT
-                }
-                else{
-                    //TODO: GET THE SERVICE AND RESUME IT
+                if (!isPaused) {
+                    stopService(new Intent(activity, LocationService.class));
+                    timer.stop();
+                    isPaused = true;
+                    pauseButton.setText("RESUME");
+                } else {
+                    startService(new Intent(activity, LocationService.class));
+
+                    timer.setBase(SystemClock.elapsedRealtime() - timeElapsed);
+                    timer.start();
+                    isPaused = false;
+                    pauseButton.setText("PAUSE");
                 }
             }
         });
+
+        finishButton.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View v) {
+                getDialog(0).show();
+            }
+        });
+    }
+
+    public void onBackPressed() {
+        getDialog(1).show();
     }
 
     public void onMapReady(GoogleMap googleMap){
@@ -131,13 +193,14 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
 
             double latitude = arg1.getDoubleExtra("LATITUDE",0);
             double longitude = arg1.getDoubleExtra("LONGITUDE", 0);
-            System.out.println("Sound:" + NOTIFICATION_SOUND);
+            //If the Latlong is legit.
             if(longitude != 0 && latitude != 0){
                 currentCoordinates = new LatLng(latitude,longitude);
                 marker.setPosition(currentCoordinates);
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentCoordinates, 17));
             }
 
+            //Call all methods when the app has fetched the second coords.
             if(previousCoorinates != null){
                 drawRoute(previousCoorinates, currentCoordinates);
                 setTotalDistance(previousCoorinates, currentCoordinates);
@@ -158,7 +221,6 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
             float[] results = new float[1];
             Location.distanceBetween(prevCoords.latitude, prevCoords.longitude,
                                      curCoords.latitude, curCoords.longitude, results);
-
             for (float i : results){
                 totalDistanceMeters += i;
             }
@@ -167,7 +229,7 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
         //Sets the average pace, based on the distance and elapsed time.
         //Using Global variable "timer"
         private int[] getAveragePace(){
-            long timeElapsed = SystemClock.elapsedRealtime() - timer.getBase();
+            timeElapsed = SystemClock.elapsedRealtime() - timer.getBase();
             int seconds = (int)timeElapsed / 1000;
 
             double totalKilometer = totalDistanceMeters / 1000;
