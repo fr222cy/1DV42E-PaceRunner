@@ -49,8 +49,6 @@ public class SetPaceActivity extends AppCompatActivity  {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         final NotificationSounds notificationSounds = new NotificationSounds();
-
-
         initMediaPlayer();
 
         String[] notifications = notificationSounds.getNotificationArray();
@@ -78,13 +76,14 @@ public class SetPaceActivity extends AppCompatActivity  {
 
                             Intent previousIntent = getIntent();
 
-                            //Pass the latest known LATLNG to the Runner class.
+                            //Pass the latest known LATLNG to the Session class.
                             intent.putExtra("LATITUDE", previousIntent.getDoubleExtra("LATITUDE", 0));
                             intent.putExtra("LONGITUDE", previousIntent.getDoubleExtra("LONGITUDE", 0));
                             //Pass the choice of notification as a string
                             intent.putExtra("NOTIFICATION_SOUND", SUBMITTED_NOTIFICATION_SOUND);
 
                             startActivity(intent);
+                            finish();
                         } else {
                             startButton.setBackgroundColor(Color.RED);
                             Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Select a notification, try again.", Snackbar.LENGTH_LONG);
@@ -143,11 +142,9 @@ public class SetPaceActivity extends AppCompatActivity  {
         });
     }
     private void initMediaPlayer(){
-
         sp = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
         jawsPreview = sp.load(getApplicationContext(), R.raw.jaws2, 5);
         //s2 = sp.load(getApplicationContext(), resourceIdForSecondSound,2);
-
     }
     private void previewChoice(String notificationChoice){
 
