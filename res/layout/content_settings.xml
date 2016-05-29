@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="0dp"
+    android:paddingLeft="0dp"
+    android:paddingRight="0dp"
+    android:paddingTop="0dp"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="se.filiprydberg.pacerunner.Activities.SettingsActivity"
+    tools:showIn="@layout/activity_setting"
+    android:background="@color/standardBackground">
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="SAVE"
+        android:textColor="@color/buttonTextColor"
+        android:id="@+id/saveButton"
+        android:layout_alignParentBottom="true"
+        android:background="@color/standardGreen" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="40dp"
+        android:layout_above="@+id/saveButton"
+        android:clickable="false"
+        android:layout_marginRight="40dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="SET NOTIFICATION SENSITIVITY"
+            android:id="@+id/textView9"
+            android:layout_marginTop="40dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true" />
+
+        <EditText
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/sensitivity"
+            android:layout_below="@+id/textView9"
+            android:layout_alignStart="@+id/textView9"
+            android:hint="Seconds "
+            android:numeric="integer" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Default is 15 seconds. Example: If you set this to 15 seconds. You will hear the notification sound when your average pace is 5:45, if your minimum average pace is 6:00"
+            android:id="@+id/textView10"
+            android:layout_below="@+id/sensitivity"
+            android:layout_alignStart="@+id/sensitivity"
+            android:textStyle="italic" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="SET DISTANCE BEFORE NOTIFICATION"
+            android:id="@+id/textView11"
+            android:layout_marginTop="40dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/meters"
+            android:numeric="integer"
+            android:maxLength="4"
+            android:hint="Meters" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Default is 500 meters. This is the distance you have to run before your average pace is shown and the notification sound activates. Higher value means more accurate and less jumpy average pace"
+            android:id="@+id/textView12"
+            android:layout_below="@+id/sensitivity"
+            android:layout_alignStart="@+id/sensitivity"
+            android:textStyle="italic" />
+    </LinearLayout>
+
+</RelativeLayout>
