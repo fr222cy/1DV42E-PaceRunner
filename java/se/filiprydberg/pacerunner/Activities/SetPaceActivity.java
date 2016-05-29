@@ -38,10 +38,8 @@ public class SetPaceActivity extends AppCompatActivity  {
     private ListView notificationList;
     private SoundPool sp;
     private String SUBMITTED_NOTIFICATION_SOUND;
-    private int sound1;
-    private int sound2;
     private int jawsPreview;
-    private int s2;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,13 +83,13 @@ public class SetPaceActivity extends AppCompatActivity  {
                             startActivity(intent);
                             finish();
                         } else {
-                            startButton.setBackgroundColor(Color.RED);
+                            startButton.setBackgroundResource(R.color.standardOrange);
                             Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Select a notification, try again.", Snackbar.LENGTH_LONG);
                             snackbar.show();
                         }
 
                     } else {
-                        startButton.setBackgroundColor(Color.RED);
+                        startButton.setBackgroundResource(R.color.standardOrange);
                         Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "You need to enter a valid pace, try again.", Snackbar.LENGTH_LONG);
                         snackbar.show();
                     }
@@ -123,7 +121,7 @@ public class SetPaceActivity extends AppCompatActivity  {
     }
 
     private ListView getListView(String[] notifications){
-        ListAdapter la = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, notifications);
+        ListAdapter la = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, notifications);
 
         notificationList = (ListView) findViewById(R.id.notificationList);
         notificationList.setAdapter(la);
@@ -148,7 +146,7 @@ public class SetPaceActivity extends AppCompatActivity  {
     }
     private void previewChoice(String notificationChoice){
 
-        System.out.println(notificationChoice);
+
         try {
             switch (notificationChoice) {
                 case "Jaws": {
@@ -176,7 +174,7 @@ public class SetPaceActivity extends AppCompatActivity  {
     }
 
     public void informNotYetAvailable(String value){
-        Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), value + "is not yet available", Snackbar.LENGTH_SHORT);
+        Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), value + " sound, is unfortunately not yet available", Snackbar.LENGTH_SHORT);
         snackbar.show();
     }
 }
