@@ -31,7 +31,7 @@ public class NotificationSounds {
         int resourceIdForSecondSound = context.getResources().getIdentifier(
                 soundName.toLowerCase() + "2", "raw", context.getPackageName());
 
-        sp = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
+        sp = new SoundPool(1, AudioManager.STREAM_ALARM,0);
         firstSound = sp.load(context, resourceIdForFirstSound, 1);
         secondSound = sp.load(context, resourceIdForSecondSound,1);
     }
