@@ -1,16 +1,19 @@
 package se.filiprydberg.pacerunner.Activities;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -41,7 +44,6 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
     private MarkerOptions positionMarker;
     private Marker marker;
     private GoogleMap map;
-    private TextView time_spent;
     private Chronometer timer;
     private ServiceReceiver serviceReceiver;
 
@@ -54,7 +56,7 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
 
     private int[] userSubmittedAveragePace;
     private final int REQUIRED_METERS_BEFORE_SHOWING_AVGPACE = 50;
-    private final int AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION = -30;
+    private int AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION;
     private String NOTIFICATION_SOUND;
     private boolean isPaused = false;
     private long timeElapsed;
@@ -75,6 +77,8 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
         finishButton = (Button) findViewById(R.id.finishButton);
         //Start the Chronometer
         startTimer();
+        //Retrieve the user-settings
+        getSettings();
 
         //Retrieve the data from the previous activity.
         Intent previousIntent = getIntent();
@@ -98,6 +102,15 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
         positionMarker = new MarkerOptions()
                 .position(startPosition);
     }
+    /*
+    User settings. Use default value if none a set.
+     */
+    private void getSettings(){
+        SharedPreferences sp = getSharedPreferences("PACERUNNER_SETTINGS", Activity.MODE_PRIVATE);
+        AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION = sp.getInt("NOTIFICATION_SENSITIVITY", -15);
+        //TODO: See what happens when none are set, might need a null checker.
+    }
+
     /*
     Gets a dialog based on the type.
     0 - Finished Dialog
@@ -147,6 +160,7 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
             public void onClick(View v) {
                 if (!isPaused) {
                     stopService(new Intent(activity, LocationService.class));
+                    previousCoorinates = null;
                     timer.stop();
                     isPaused = true;
                     pauseButton.setText("RESUME");
@@ -279,6 +293,13 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
                 String avgSecond = String.valueOf(averagePace[1]);
                 String gapMinute = String.valueOf(gap[0]);
                 String gapSecond = String.valueOf(gap[1]);
+                if(gap[2] < 0){
+                    gapToPaceView.setTextColor(getResources().getColor(R.color.goodGreen));
+                }else if(gap[2] == 0){
+                    gapToPaceView.setTextColor(getResources().getColor(R.color.standardWhite));
+                }else{
+                    gapToPaceView.setTextColor(getResources().getColor(R.color.badRed));
+                }
 
                 if(averagePace[0] < 10){
                      avgMinute = "0" + avgMinute;
