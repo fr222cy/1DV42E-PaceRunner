@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean canProceed = false;
     private LatLng coordinates;
     private boolean hasAskedForPermission = false;
-    private boolean paused = false;
+
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,10 +90,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public boolean onOptionsItemSelected(MenuItem item){
         switch(item.getItemId()){
             case R.id.action_statistics : {
+
                 return true;
             }
             case R.id.action_help : {
+                
                 return true;
+            }
+            case R.id.action_settings :{
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
             }
         }
         return false;
@@ -138,11 +144,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void disableButton(){
         proceedButton.setText("TRYING TO LOCATE YOU...");
-        proceedButton.setBackgroundColor(Color.rgb(255, 165, 0));
+        proceedButton.setBackgroundResource(R.color.standardOrange);
     }
     public void enableButton(){
-        proceedButton.setText("SET PACE AND GO");
-        proceedButton.setBackgroundColor(Color.GREEN);
+        proceedButton.setText("SET SOUND AND PACE");
+        proceedButton.setBackgroundResource(R.color.standardGreen);
     }
 
     @Override
