@@ -26,10 +26,10 @@
     <Button
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="SET SOUND AND PACE"
-        android:textColor="@color/standardBackground"
+        android:text="TRYING TO LOCATE YOU..."
+        android:textColor="@color/buttonTextColor"
         android:id="@+id/proceedButton"
         android:layout_alignParentBottom="true"
-        android:background="@color/standardGreen" />
+        android:background="@color/standardOrange" />
 
 </RelativeLayout>

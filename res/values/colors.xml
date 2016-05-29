@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
-    <color name="standardGreen">#76EE00</color>
-    <color name="standardOrange">#FFA500</color>
+    <color name="colorPrimary">#FFA500</color>
+    <color name="colorPrimaryDark">#FFA500</color>
+    <color name="colorAccent">#ffffff</color>
+    <color name="standardGreen">#67ab25</color>
+    <color name="standardOrange">#ff9500</color>
     <color name="standardBackground">#616161</color>
-    <color name="standardWhite">#ffffff</color>
+    <color name="standardWhite">#cec9c9</color>
+    <color name="buttonTextColor">#616161</color>
+    <color name="goodGreen">#3afd12</color>
+    <color name="badRed">#df1118</color>
 </resources>

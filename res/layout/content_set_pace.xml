@@ -18,7 +18,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="START"
-        android:textColor="@color/standardBackground"
+        android:textColor="@color/buttonTextColor"
         android:id="@+id/startButton"
         android:background="@color/standardGreen"
         android:layout_alignParentBottom="true"
