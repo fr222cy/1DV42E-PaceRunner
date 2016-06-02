@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="0dp"
+    android:paddingLeft="0dp"
+    android:paddingRight="0dp"
+    android:paddingTop="0dp"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="se.filiprydberg.pacerunner.Activities.SummaryActivity"
+    tools:showIn="@layout/activity_summary">
+
+    <Button
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:text="DISCARD"
+        android:textColor="@color/textSecondary"
+        android:id="@+id/discardButton"
+        android:background="@color/errorColor"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:singleLine="false" />
+
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="SAVE"
+        android:textColor="@color/textSecondary"
+        android:id="@+id/saveButton"
+        android:background="@color/standardGreen"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_toRightOf="@+id/discardButton" />
+</RelativeLayout>
