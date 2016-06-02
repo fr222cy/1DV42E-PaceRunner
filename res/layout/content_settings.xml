@@ -11,13 +11,13 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="se.filiprydberg.pacerunner.Activities.SettingsActivity"
     tools:showIn="@layout/activity_setting"
-    android:background="@color/standardBackground">
+    android:background="@color/backGround">
 
     <Button
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="SAVE"
-        android:textColor="@color/buttonTextColor"
+        android:textColor="@color/textSecondary"
         android:id="@+id/saveButton"
         android:layout_alignParentBottom="true"
         android:background="@color/standardGreen" />

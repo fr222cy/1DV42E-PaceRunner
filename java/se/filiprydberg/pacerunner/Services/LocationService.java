@@ -16,8 +16,10 @@ public class LocationService extends Service {
     private static double longitude;
     private static double accuracy;
     private static boolean providerEnabled = true;
-    private static int MILLISECONDS_UPDATE_LOCATION = 1000;
+    private static int MILLISECONDS_UPDATE_LOCATION = 3000;
     private boolean isServiceEnabled = true;
+    private LocationManager locationManager;
+    private LocationListener locationListener;
     private DataPassingThread thread;
     public LocationService() {
 
@@ -26,7 +28,7 @@ public class LocationService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
+
         throw new UnsupportedOperationException("Not yet implemented");
     }
     @Override
@@ -40,12 +42,15 @@ public class LocationService extends Service {
     @Override
     public void onDestroy()
     {
+        super.onDestroy();
         isServiceEnabled = false;
+
+
     }
 
     public void startLocationListener(LocationManager locationManager){
-
-        LocationListener locationListener = new LocationListener() {
+        this.locationManager = locationManager;
+        this.locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 latidude = location.getLatitude();
@@ -55,7 +60,6 @@ public class LocationService extends Service {
 
             @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
-
             }
 
             @Override
@@ -79,7 +83,7 @@ public class LocationService extends Service {
 
             while(isServiceEnabled){
                 try {
-                    Thread.sleep(1500);
+                    Thread.sleep(3000);
                     Intent intent = new Intent();
                     intent.setAction(MY_ACTION);
                     intent.putExtra("LATITUDE", LocationService.latidude);

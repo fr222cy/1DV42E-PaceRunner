@@ -10,6 +10,7 @@ import android.media.SoundPool;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -30,7 +31,6 @@ import se.filiprydberg.pacerunner.R;
 public class SetPaceActivity extends AppCompatActivity  {
     private static final String TAG = "MyActivity";
     private Button startButton;
-    private EditText averagePace;
     private int submittedMinute;
     private int submittedSecond;
     private NumberPicker minutePicker;
@@ -38,7 +38,6 @@ public class SetPaceActivity extends AppCompatActivity  {
     private ListView notificationList;
     private SoundPool sp;
     private String SUBMITTED_NOTIFICATION_SOUND;
-    private int jawsPreview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,8 +45,14 @@ public class SetPaceActivity extends AppCompatActivity  {
         setContentView(R.layout.activity_set_pace);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        ActionBar ab = getSupportActionBar();
+        if(ab != null){
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
+
         final NotificationSounds notificationSounds = new NotificationSounds();
-        initMediaPlayer();
+
 
         String[] notifications = notificationSounds.getNotificationArray();
 
@@ -83,13 +88,13 @@ public class SetPaceActivity extends AppCompatActivity  {
                             startActivity(intent);
                             finish();
                         } else {
-                            startButton.setBackgroundResource(R.color.standardOrange);
+                            startButton.setBackgroundResource(R.color.errorColor);
                             Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Select a notification, try again.", Snackbar.LENGTH_LONG);
                             snackbar.show();
                         }
 
                     } else {
-                        startButton.setBackgroundResource(R.color.standardOrange);
+                        startButton.setBackgroundResource(R.color.errorColor);
                         Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "You need to enter a valid pace, try again.", Snackbar.LENGTH_LONG);
                         snackbar.show();
                     }
@@ -99,8 +104,9 @@ public class SetPaceActivity extends AppCompatActivity  {
 
     public void setTimePickers() {
         minutePicker = (NumberPicker) findViewById(R.id.minutePicker);
-        minutePicker.setMinValue(1);
+        minutePicker.setMinValue(2);
         minutePicker.setMaxValue(20);
+        minutePicker.setValue(5);
 
         secondPicker = (NumberPicker) findViewById(R.id.secondPicker);
         secondPicker.setMinValue(0);
@@ -135,43 +141,10 @@ public class SetPaceActivity extends AppCompatActivity  {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 SUBMITTED_NOTIFICATION_SOUND = String.valueOf(parent.getItemAtPosition(position));
-                previewChoice(SUBMITTED_NOTIFICATION_SOUND);
             }
         });
     }
-    private void initMediaPlayer(){
-        sp = new SoundPool(1, AudioManager.STREAM_MUSIC,0);
-        jawsPreview = sp.load(getApplicationContext(), R.raw.jaws2, 5);
-        //s2 = sp.load(getApplicationContext(), resourceIdForSecondSound,2);
-    }
-    private void previewChoice(String notificationChoice){
 
-
-        try {
-            switch (notificationChoice) {
-                case "Jaws": {
-                    if(jawsPreview != 0) {
-                        sp.play(jawsPreview, 1, 1, 0, 1, 1);
-                    }
-                    break;
-                }
-                case "Psycho": {
-                    informNotYetAvailable(notificationChoice);
-                    break;
-                }
-                case "Dogs":{
-                    informNotYetAvailable(notificationChoice);
-                    break;
-                }
-                case "Beep":{
-                    informNotYetAvailable(notificationChoice);
-                    break;
-                }
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }
 
     public void informNotYetAvailable(String value){
         Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), value + " sound, is unfortunately not yet available", Snackbar.LENGTH_SHORT);

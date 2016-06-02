@@ -8,7 +8,7 @@
     android:paddingLeft="0dp"
     android:paddingRight="0dp"
     android:paddingTop="0dp"
-    android:background="@color/standardBackground"
+    android:background="@color/backGround"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".Activities.MainActivity"
     tools:showIn="@layout/activity_pacerunner">
@@ -22,14 +22,14 @@
         android:layout_height="wrap_content"
         tools:context="se.filiprydberg.pacerunner.Activities.MainActivity"
          />
-
+n
     <Button
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="TRYING TO LOCATE YOU..."
-        android:textColor="@color/buttonTextColor"
+        android:textColor="@color/textSecondary"
         android:id="@+id/proceedButton"
         android:layout_alignParentBottom="true"
-        android:background="@color/standardOrange" />
+        android:background="@color/errorColor" />
 
 </RelativeLayout>

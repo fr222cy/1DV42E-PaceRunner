@@ -8,13 +8,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.location.Location;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -28,10 +24,12 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import se.filiprydberg.pacerunner.NotificationSounds;
 import se.filiprydberg.pacerunner.Services.LocationService;
@@ -43,7 +41,7 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
     private LatLng startPosition;
     private MarkerOptions positionMarker;
     private Marker marker;
-    private GoogleMap map;
+    protected GoogleMap map;
     private Chronometer timer;
     private ServiceReceiver serviceReceiver;
 
@@ -55,11 +53,12 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
     private NotificationSounds sounds = new NotificationSounds();
 
     private int[] userSubmittedAveragePace;
-    private final int REQUIRED_METERS_BEFORE_SHOWING_AVGPACE = 50;
+    private int REQUIRED_METERS_BEFORE_SHOWING_AVGPACE;
     private int AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION;
     private String NOTIFICATION_SOUND;
     private boolean isPaused = false;
     private long timeElapsed;
+    private List<Polyline> path;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,8 +72,8 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
         totalDistanceView = (TextView) findViewById(R.id.distance);
         averagePaceView = (TextView) findViewById(R.id.average_pace);
         gapToPaceView = (TextView) findViewById(R.id.gap_to_pace);
-        pauseButton = (Button) findViewById(R.id.pausebutton);
-        finishButton = (Button) findViewById(R.id.finishButton);
+        pauseButton = (Button) findViewById(R.id.discardButton);
+        finishButton = (Button) findViewById(R.id.saveButton);
         //Start the Chronometer
         startTimer();
         //Retrieve the user-settings
@@ -108,7 +107,7 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
     private void getSettings(){
         SharedPreferences sp = getSharedPreferences("PACERUNNER_SETTINGS", Activity.MODE_PRIVATE);
         AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION = sp.getInt("NOTIFICATION_SENSITIVITY", -15);
-        //TODO: See what happens when none are set, might need a null checker.
+        REQUIRED_METERS_BEFORE_SHOWING_AVGPACE = sp.getInt("NOTIFICATION_METERS_BEFORE_START", 500);
     }
 
     /*
@@ -119,12 +118,14 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
     private AlertDialog getDialog(int type) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         if(type == 0){
+            final Intent summary = new Intent(this, SummaryActivity.class);
             builder.setMessage("Press proceed to see your session summary.")
                     .setTitle("Are you done?");
             // Add the buttons
             builder.setPositiveButton("Proceed", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    // User clicked OK button
+                    startActivity(summary);
+                    finish();
                 }
             });
             builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -201,10 +202,17 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
 
     private class ServiceReceiver extends BroadcastReceiver {
         private float totalDistanceMeters;
+        private int secondsUnderPace;
+        private int secondsOverPace;
+        private boolean notifiedUnderPace = false;
+        private boolean isOverPace;
+
 
         @Override
         public void onReceive(Context arg0, Intent arg1) {
-
+            if(isPaused){
+                previousCoorinates = null;
+            }
             double latitude = arg1.getDoubleExtra("LATITUDE",0);
             double longitude = arg1.getDoubleExtra("LONGITUDE", 0);
             //If the Latlong is legit.
@@ -215,13 +223,25 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
             }
 
             //Call all methods when the app has fetched the second coords.
-            if(previousCoorinates != null){
+            if(previousCoorinates != null ){
                 drawRoute(previousCoorinates, currentCoordinates);
                 setTotalDistance(previousCoorinates, currentCoordinates);
                 int[] averagePace = getAveragePace();
                 int[] gap = getGapToAveragePace(averagePace);
-                int soundType = getWhatSoundThatShouldBePlayed(gap[2]);
-                sounds.playSoundByType(soundType);
+
+
+                if(isRequiredMetersComplete()){
+                    if(!isPaused){
+                        sounds.playSoundByType(getWhatSoundThatShouldBePlayed(gap[2]));
+                    }else{
+                        sounds.playSoundByType(0);
+                    }
+                }
+                else{
+                    //If no notification should be given, send in 0(No sound) as value.
+                    sounds.playSoundByType(0);
+                }
+
                 updateViewStatistics(averagePace, gap);
                 previousCoorinates = new LatLng(currentCoordinates.latitude,currentCoordinates.longitude);
             }
@@ -241,7 +261,7 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
         }
 
         //Sets the average pace, based on the distance and elapsed time.
-        //Using Global variable "timer"
+        //Using chronometer variable "timer"
         private int[] getAveragePace(){
             timeElapsed = SystemClock.elapsedRealtime() - timer.getBase();
             int seconds = (int)timeElapsed / 1000;
@@ -253,7 +273,10 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
 
             return new int[] {minute,second};
         }
-
+        /*
+        Return: int[] with min- and sec difference formatted. and a third value
+        with seconds not formatted. ex. if gap is 1:30: {1, 30, 90}
+         */
         private int[] getGapToAveragePace(int[] averagePace){
             SimpleDateFormat format = new SimpleDateFormat("mm:ss");
 
@@ -277,28 +300,49 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
             return new int[] {0,0};
         }
         //Using Google Maps to draw the route that has been run.
-        private void drawRoute(LatLng prevCoords, LatLng curCoords){
-            map.addPolyline(new PolylineOptions()
-                    .add(prevCoords, curCoords)
-                    .width(5)
-                    .color(Color.rgb(255, 165, 0)));
+        private void drawRoute(LatLng prevCoords, LatLng curCoords) {
+
+            if(!isRequiredMetersComplete()){
+                map.addPolyline(new PolylineOptions()
+                        .add(prevCoords, curCoords)
+                        .width(10)
+                        .color(getResources().getColor(R.color.colorPrimary)));
+            }
+            else{
+                if(isOverPace){
+                    map.addPolyline(new PolylineOptions()
+                            .add(prevCoords, curCoords)
+                            .width(10)
+                            .color(getResources().getColor(R.color.goodGreen)));
+                }else{
+                    map.addPolyline(new PolylineOptions()
+                            .add(prevCoords, curCoords)
+                            .width(10)
+                            .color(getResources().getColor(R.color.badRed)));
+                }
+            }
         }
+
 
         //Updates the view with the Session stats
         private void updateViewStatistics(int[] averagePace, int[] gap){
             totalDistanceView.setText(String.format("%.2f", totalDistanceMeters / 1000) + "Km");
 
-            if(totalDistanceMeters >= REQUIRED_METERS_BEFORE_SHOWING_AVGPACE){
+            if(isRequiredMetersComplete()){
                 String avgMinute = String.valueOf(averagePace[0]);
                 String avgSecond = String.valueOf(averagePace[1]);
                 String gapMinute = String.valueOf(gap[0]);
                 String gapSecond = String.valueOf(gap[1]);
+
                 if(gap[2] < 0){
                     gapToPaceView.setTextColor(getResources().getColor(R.color.goodGreen));
+                    isOverPace = true;
                 }else if(gap[2] == 0){
-                    gapToPaceView.setTextColor(getResources().getColor(R.color.standardWhite));
+                    gapToPaceView.setTextColor(getResources().getColor(R.color.textPrimary));
+                    isOverPace = true;
                 }else{
                     gapToPaceView.setTextColor(getResources().getColor(R.color.badRed));
+                    isOverPace= false;
                 }
 
                 if(averagePace[0] < 10){
@@ -318,31 +362,49 @@ public class SessionActivity extends AppCompatActivity implements OnMapReadyCall
                     gapSecond = String.valueOf(Math.abs(gap[1]));
 
                     gapToPaceView.setText("-"+gapMinute+":"+gapSecond);
-                }
-                else{
+                }else{
                     gapToPaceView.setText("+"+gapMinute+":"+gapSecond);
                 }
-                averagePaceView.setText(avgMinute+":"+avgSecond);
-            }
-            else {
+                averagePaceView.setText(avgMinute + ":" + avgSecond);
+
+            }else {
                 averagePaceView.setText("Calculating...");
                 gapToPaceView.setText("Calculating...");
             }
+
+
         }
         /*
-        Returns 0-2,
+        Returns 0-3,
         0 indicates that no sound should be played.
         1 indicates that the first and less annoying sound should be played.
         2 indicates that the second and more annoying sound should be played.
+        3 indicates that a Voice notifies that you are below your submitted pace.
         */
         private int getWhatSoundThatShouldBePlayed(int gapAmountOfSeconds){
+
+            if(gapAmountOfSeconds > 0 && !notifiedUnderPace  ){
+                notifiedUnderPace = true;
+                return 3;
+            }
             if (gapAmountOfSeconds >= AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION && gapAmountOfSeconds <= 0){
                 if (gapAmountOfSeconds >= AMOUNT_OF_SECONDS_WHEN_TRIGGERING_NOTIFICATION/2 && gapAmountOfSeconds <= 0){
                     return 2;
                 }
+                notifiedUnderPace = false;
                 return 1;
             }
+
+
             return 0;
+        }
+
+        private boolean isRequiredMetersComplete(){
+            return totalDistanceMeters >= REQUIRED_METERS_BEFORE_SHOWING_AVGPACE;
+        }
+
+        private int[] sessionSummary(){
+            return new int[] {1};
         }
     }
 }

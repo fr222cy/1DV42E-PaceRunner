@@ -8,7 +8,7 @@
     android:paddingLeft="0dp"
     android:paddingRight="0dp"
     android:paddingTop="0dp"
-    android:background="@color/standardBackground"
+    android:background="@color/backGround"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".Activities.SessionActivity"
     tools:showIn="@layout/activity_navigation">
@@ -29,9 +29,9 @@
         android:layout_width="160dp"
         android:layout_height="wrap_content"
         android:text="PAUSE"
-        android:textColor="@color/buttonTextColor"
-        android:id="@+id/pausebutton"
-        android:background="@color/standardOrange"
+        android:textColor="@color/textSecondary"
+        android:id="@+id/discardButton"
+        android:background="@color/errorColor"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
          />
@@ -40,67 +40,71 @@
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:text="FINISH"
-        android:textColor="@color/buttonTextColor"
-        android:id="@+id/finishButton"
+        android:textColor="@color/textSecondary"
+        android:id="@+id/saveButton"
         android:background="@color/standardGreen"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
-        android:layout_toRightOf="@+id/pausebutton" />
+        android:layout_toRightOf="@+id/discardButton" />
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/map"
-        android:layout_toStartOf="@+id/pausebutton"
-        android:layout_above="@+id/pausebutton"
+        android:layout_toStartOf="@+id/discardButton"
+        android:layout_above="@+id/discardButton"
         android:id="@+id/linearLayout"
         android:baselineAligned="false">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="DISTANCE: "
+            android:text="DISTANCE:"
             android:id="@+id/textView5"
             android:textSize="24sp"
-            android:textColor="@color/standardWhite"
-            android:layout_above="@+id/pausebutton"
+            android:textColor="@color/textPrimary"
+            android:layout_above="@+id/discardButton"
             android:layout_below="@+id/map"
             android:layout_alignParentStart="true"
             android:layout_gravity="right"
             android:layout_marginTop="5dp" />
 
         <View style="@style/Divider" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="AVERAGE PACE:"
-            android:textColor="@color/standardWhite"
-            android:id="@+id/textView6"
-            android:textSize="24sp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true"
-            android:layout_gravity="right"
-            android:layout_marginTop="5dp" />
 
-        <View style="@style/Divider" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="TIME SPENT:"
-            android:textColor="@color/standardWhite"
+            android:textColor="@color/textPrimary"
             android:id="@+id/textView7"
             android:textSize="24sp"
             android:layout_below="@+id/textView6"
             android:layout_alignEnd="@+id/textView6"
             android:layout_gravity="right"
             android:layout_marginTop="5dp" />
+
+        <View style="@style/Divider" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AVERAGE PACE:"
+            android:textColor="@color/textPrimary"
+            android:id="@+id/textView6"
+            android:textSize="24sp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="5dp"
+            android:layout_gravity="right" />
+
         <View style="@style/Divider" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="GAP TO PACE:"
-            android:textColor="@color/standardWhite"
+            android:textColor="@color/textPrimary"
             android:id="@+id/textView8"
             android:textSize="24sp"
             android:layout_below="@+id/textView7"
@@ -115,50 +119,56 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentEnd="true"
-        android:layout_toEndOf="@+id/finishButton"
-        android:layout_above="@+id/pausebutton"
+        android:layout_toEndOf="@+id/saveButton"
+        android:layout_above="@+id/discardButton"
         android:layout_alignTop="@+id/linearLayout">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0KM"
-            android:textColor="@color/standardWhite"
+            android:textColor="@color/textPrimary"
             android:id="@+id/distance"
             android:layout_alignTop="@+id/textView5"
             android:layout_toEndOf="@+id/textView5"
             android:textSize="24sp"
             android:layout_marginTop="5dp"
             android:layout_marginLeft="10dp" />
+
         <View style="@style/Divider" />
+
+        <Chronometer
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/chronometer"
+            android:textColor="@color/textPrimary"
+            android:layout_alignTop="@+id/textView7"
+            android:layout_alignStart="@+id/average_pace"
+            android:textSize="24sp"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="10dp" />
+
+        <View style="@style/Divider" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0:00"
-            android:textColor="@color/standardWhite"
+            android:textColor="@color/textPrimary"
             android:id="@+id/average_pace"
             android:textSize="24sp"
             android:layout_above="@+id/textView7"
             android:layout_alignStart="@+id/distance"
             android:layout_marginTop="5dp"
-            android:layout_marginLeft="10dp" />
-        <View style="@style/Divider" />
-        <Chronometer
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/chronometer"
-            android:textColor="@color/standardWhite"
-            android:layout_alignTop="@+id/textView7"
-            android:layout_alignStart="@+id/average_pace"
-            android:textSize="25dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginLeft="10dp" />
+            android:layout_marginLeft="10dp"
+            android:layout_gravity="left" />
+
         <View style="@style/Divider" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="+0:00"
-            android:textColor="@color/standardWhite"
+            android:textColor="@color/textPrimary"
             android:id="@+id/gap_to_pace"
             android:textSize="24sp"
             android:layout_alignTop="@+id/textView8"

@@ -50,7 +50,7 @@ public class SettingsActivity extends AppCompatActivity {
                             saveSettings(sensitivityValue, metersValue);
                             finish();
                         } else {
-                            saveButton.setBackgroundResource(R.color.standardOrange);
+                            saveButton.setBackgroundResource(R.color.errorColor);
                             Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Sensitivity:10-60  | Meters:200-5000.", Snackbar.LENGTH_LONG);
                             snackbar.show();
                         }
@@ -60,7 +60,7 @@ public class SettingsActivity extends AppCompatActivity {
                     }
                 }catch(Exception e){
                     e.printStackTrace();
-                    saveButton.setBackgroundResource(R.color.standardOrange);
+                    saveButton.setBackgroundResource(R.color.errorColor);
                     Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Enter both fields.", Snackbar.LENGTH_LONG);
                     snackbar.show();
                 }
@@ -68,7 +68,6 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
     }
-    // Found solution @ http://stackoverflow.com/questions/14095656/is-it-possible-to-change-the-increment-of-numberpicker-when-long-pressing
     private boolean validateSensitivity(int sens) {
         return sens >= 10 && sens <=60;
     }
@@ -82,7 +81,7 @@ public class SettingsActivity extends AppCompatActivity {
         sensitivityPicker = (EditText) findViewById(R.id.sensitivity);
         SharedPreferences sp = getSharedPreferences("PACERUNNER_SETTINGS", Activity.MODE_PRIVATE);
 
-        sensitivityPicker.setText(String.valueOf(Math.abs(sp.getInt("NOTIFICATION_SENSITIVITY", -15))));
+        sensitivityPicker.setText(String.valueOf(Math.abs(sp.getInt("NOTIFICATION_SENSITIVITY", 15))));
         sensitivityPicker.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 sensitivityPicker.setText("");
@@ -98,17 +97,11 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
-
-
-
     private void saveSettings(int sensitivityValue, int meters){
-
         SharedPreferences prefs = getSharedPreferences("PACERUNNER_SETTINGS", Activity.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt("NOTIFICATION_SENSITIVITY", sensitivityValue);
         editor.putInt("NOTIFICATION_METERS_BEFORE_START", meters);
-        editor.commit();
-
+        editor.apply();
     }
-
 }

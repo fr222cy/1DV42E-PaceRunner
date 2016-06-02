@@ -27,6 +27,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -90,11 +91,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public boolean onOptionsItemSelected(MenuItem item){
         switch(item.getItemId()){
             case R.id.action_statistics : {
-
+                informNotYetAvailable();
                 return true;
             }
             case R.id.action_help : {
-                
+                informNotYetAvailable();
                 return true;
             }
             case R.id.action_settings :{
@@ -144,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void disableButton(){
         proceedButton.setText("TRYING TO LOCATE YOU...");
-        proceedButton.setBackgroundResource(R.color.standardOrange);
+        proceedButton.setBackgroundResource(R.color.errorColor);
     }
     public void enableButton(){
         proceedButton.setText("SET SOUND AND PACE");
@@ -167,6 +168,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     service.startLocationListener(locationManager);
                 }
         }
+    }
+
+    public void informNotYetAvailable(){
+        Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "This feature is unfortunately not yet available", Snackbar.LENGTH_SHORT);
+        snackbar.show();
     }
 
     private class ServiceReceiver extends BroadcastReceiver {
